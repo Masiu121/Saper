@@ -1,6 +1,7 @@
 package com.oxology.saper.screens;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.utils.ScreenUtils;
@@ -35,6 +36,12 @@ public class MainGameScreen implements Screen {
                 }
             }
         }
+
+        for(int i = 0; i < difficulty.getRows(); i++) {
+            for(int j = 0; j < difficulty.getCols(); j++) {
+                map[i][j].checkBombsAround(map);
+            }
+        }
     }
 
     @Override
@@ -64,8 +71,8 @@ public class MainGameScreen implements Screen {
             for(int j = 0; j < difficulty.getCols(); j++) {
                 if(game.getGameX() > (map[i][j].getX()*16) && game.getGameX() < (map[i][j].getX()*16)+16) {
                     if(game.getGameY() > (map[i][j].getY()*16) && game.getGameY() < (map[i][j].getY()*16)+16) {
-                        if(Gdx.input.justTouched()) {
-                            map[i][j].reveal();
+                        if(Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)) {
+                            map[i][j].reveal(map);
                         }
                     }
                 }
