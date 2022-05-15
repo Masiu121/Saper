@@ -4,10 +4,11 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 public class Tile {
     private int x, y;
-    private TileType type;
+    public TileType type;
     private float scale;
-    private boolean bomb;
+    public boolean bomb;
     public int bombsAround;
+    public int flagsAround;
 
     public Tile(int x, int y, boolean bomb, float scale) {
         this.x = x;
@@ -18,7 +19,7 @@ public class Tile {
     }
 
     public void draw(SpriteBatch batch) {
-        batch.draw(type.getTexture(), this.x*16, this.y*16);
+        batch.draw(type.getTexture(), this.x*32, this.y*32);
     }
 
     public void checkBombsAround(Tile[][] map) {
@@ -31,6 +32,20 @@ public class Tile {
                 }
             }
         }
+    }
+
+    public void checkFlagsAround(Tile[][] map) {
+        int flags = 0;
+        for(int i = -1; i < 2; i++) {
+            for(int j = -1; j < 2; j++) {
+                if(x+i >= 0 && x+i < map.length && y+j >= 0 && y+j < map.length) {
+                    if (map[x + i][y + j].type == TileType.FLAG) {
+                        flags++;
+                    }
+                }
+            }
+        }
+        flagsAround = flags;
     }
 
     public void reveal(Tile[][] map) {
@@ -69,22 +84,12 @@ public class Tile {
             }
         }
 
-
-//        for(int i = -1; i < 2; i++) {
-//            for(int j = -1; j < 2; j++) {
-//                if(x+i > 0 && x+i < map.length && y+j > 0 && y+j < map.length) {
-//                    if (map[x + i][y + j].type == TileType.HIDDEN && map[x + i][y + j].bombsAround == 0) {
-//                        map[x + i][y + j].reveal(map);
-//                    }
-//                }
-//            }
-//        }
-
-        if(bombsAround == 0)
-        for(int i = -1; i < 2; i++) {
-            for(int j = -1; j < 2; j++) {
-                if(x+i >= 0 && x+i < map.length && y+j >= 0 && y+j < map.length && map[x + i][y + j].type == TileType.HIDDEN) {
-                    map[x + i][y + j].reveal(map);
+        if(bombsAround == 0) {
+            for (int i = -1; i < 2; i++) {
+                for (int j = -1; j < 2; j++) {
+                    if (x + i >= 0 && x + i < map.length && y + j >= 0 && y + j < map.length && map[x + i][y + j].type == TileType.HIDDEN) {
+                        map[x + i][y + j].reveal(map);
+                    }
                 }
             }
         }
@@ -96,5 +101,18 @@ public class Tile {
 
     public int getY() {
         return y;
+    }
+
+    public void revealOthers(Tile[][] map) {
+        if(bombsAround == flagsAround && type != TileType.HIDDEN) {
+            for (int i = -1; i < 2; i++) {
+                for (int j = -1; j < 2; j++) {
+                    if (x + i >= 0 && x + i < map.length && y + j >= 0 && y + j < map.length && map[x + i][y + j].type == TileType.HIDDEN) {
+                        map[x + i][y + j].reveal(map);
+                    }
+                }
+            }
+        }
+        System.out.println(bombsAround == flagsAround);
     }
 }
