@@ -8,6 +8,7 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import com.oxology.saper.SaperGame;
 import com.oxology.saper.util.Difficulty;
 import com.oxology.saper.util.Tile;
+import com.oxology.saper.util.TileType;
 
 import java.util.Random;
 
@@ -30,9 +31,9 @@ public class MainGameScreen implements Screen {
         for(int i = 0; i < difficulty.getRows(); i++) {
             for(int j = 0; j < difficulty.getCols(); j++) {
                 if(random.nextFloat()<difficulty.getBombChance()) {
-                    map[i][j] = new Tile(i, j, true, 1.0f);
+                    map[i][j] = new Tile(i, j, true, 0.5f);
                 } else {
-                    map[i][j] = new Tile(i, j, false, 1.0f);
+                    map[i][j] = new Tile(i, j, false, 0.5f);
                 }
             }
         }
@@ -51,7 +52,7 @@ public class MainGameScreen implements Screen {
 
     @Override
     public void render(float delta) {
-        ScreenUtils.clear(0, 0, 0, 1);
+        ScreenUtils.clear(0.15f, 0.15f, 0.15f, 1);
         game.getBatch().setProjectionMatrix(camera.combined);
         camera.update();
 
@@ -69,15 +70,57 @@ public class MainGameScreen implements Screen {
     private void update() {
         for(int i = 0; i < difficulty.getRows(); i++) {
             for(int j = 0; j < difficulty.getCols(); j++) {
-                if(game.getGameX() > (map[i][j].getX()*16) && game.getGameX() < (map[i][j].getX()*16)+16) {
-                    if(game.getGameY() > (map[i][j].getY()*16) && game.getGameY() < (map[i][j].getY()*16)+16) {
+                if(game.getGameX() > (map[i][j].getX()*32) && game.getGameX() < (map[i][j].getX()*32)+32) {
+                    if(game.getGameY() > (map[i][j].getY()*32) && game.getGameY() < (map[i][j].getY()*32)+32) {
                         if(Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)) {
-                            map[i][j].reveal(map);
+                            if(map[i][j].type == TileType.HIDDEN)
+                                if(map[i][j].bomb)
+                                    revealBombs();
+                                else
+                                    map[i][j].reveal(map);
+                            else
+                                map[i][j].revealOthers(map);
+                        }
+                        if(Gdx.input.isButtonJustPressed(Input.Buttons.RIGHT)) {
+                            if(map[i][j].type == TileType.HIDDEN)
+                                map[i][j].type = TileType.FLAG;
+                            else if(map[i][j].type == TileType.FLAG)
+                                map[i][j].type = TileType.Q_MARK;
+                            else if(map[i][j].type == TileType.Q_MARK)
+                                map[i][j].type = TileType.HIDDEN;
+
+                            for(int i1 = 0; i1 < difficulty.getRows(); i1++) {
+                                for(int j1 = 0; j1 < difficulty.getCols(); j1++) {
+                                    map[i1][j1].checkFlagsAround(map);
+                                }
+                            }
+                            System.out.println(map[i][j].flagsAround + ", " + map[i][j].bombsAround);
                         }
                     }
                 }
             }
         }
+    }
+
+    private void revealBombs() {
+        for(int i = 0; i < difficulty.getRows(); i++) {
+            for(int j = 0; j < difficulty.getCols(); j++) {
+                if(map[i][j].bomb) {
+                    map[i][j].type = TileType.BOMB;
+                }
+            }
+        }
+    }
+
+    private boolean checkWin() {
+        for(int i = 0; i < difficulty.getRows(); i++) {
+            for(int j = 0; j < difficulty.getCols(); j++) {
+                if(map[i][j].bomb && map[i][j].type != TileType.FLAG) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     @Override
