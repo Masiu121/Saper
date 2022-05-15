@@ -19,7 +19,6 @@ public class SaperGame extends Game {
 		gameViewportWidth = 800;
 		gameViewportHeight = 450;
 		setup();
-		this.setScreen(new MainGameScreen(this, Difficulty.EASY));
 	}
 
 	public void setup() {
@@ -31,6 +30,9 @@ public class SaperGame extends Game {
 	public void render () {
 		if(Gdx.input.isKeyJustPressed(Input.Keys.C))
 			Gdx.app.exit();
+
+		if(Gdx.input.isKeyJustPressed(Input.Keys.ENTER))
+			this.setScreen(new MainGameScreen(this, Difficulty.EASY));
 
 		super.render();
 	}
